@@ -6,7 +6,7 @@ import numpy as np
 from PyQt5.QtWidgets import (
     QApplication, QWidget, QLabel, QVBoxLayout, QHBoxLayout,
     QPushButton, QFileDialog, QMessageBox, QSplitter, QListWidget, QMainWindow,
-    QComboBox, QStackedWidget, QSizePolicy
+    QComboBox, QStackedWidget, QSizePolicy, QButtonGroup, QFrame, QStyle
 )
 from PyQt5.QtGui import QImage, QPixmap
 from PyQt5.QtCore import Qt, QPoint
@@ -14,6 +14,175 @@ from PyQt5.QtCore import Qt, QPoint
 
 IMAGE_EXTENSIONS = ('.png', '.jpg', '.jpeg', '.bmp', '.tif', '.tiff')
 IMAGE_FILE_FILTER = '图像文件 (*.png *.jpg *.jpeg *.bmp *.tif *.tiff);;所有文件 (*)'
+
+APP_STYLE = """
+QMainWindow, QWidget#mainSurface {
+    background: #151a1f;
+    color: #d9e1e7;
+    font-family: "Segoe UI", "Microsoft YaHei UI", sans-serif;
+    font-size: 13px;
+}
+QLabel {
+    color: #d9e1e7;
+}
+QWidget#toolbar {
+    background: #1d252c;
+    border: 1px solid #2d3942;
+    border-radius: 6px;
+}
+QLabel#appName {
+    color: #f4f7f9;
+    font-size: 19px;
+    font-weight: 600;
+}
+QLabel#appSection {
+    color: #7f909c;
+    font-size: 10px;
+    font-weight: 600;
+}
+QLabel#fieldLabel, QLabel#listTitle {
+    color: #8fa2af;
+    font-size: 11px;
+    font-weight: 600;
+}
+QLabel#pathValue {
+    color: #d7e1e7;
+    background: #141a1f;
+    border: 1px solid #303d46;
+    border-radius: 4px;
+    padding: 5px 8px;
+}
+QLabel#selectedFile {
+    color: #b7f2dc;
+    background: #18342f;
+    border: 1px solid #2b5c51;
+    border-radius: 4px;
+    padding: 5px 8px;
+}
+QLabel#summary {
+    color: #98aab5;
+    padding: 2px 1px;
+    font-size: 12px;
+}
+QLabel#pixelInfo {
+    color: #8bf0bf;
+    background: #11171b;
+    border: 1px solid #27343c;
+    border-radius: 5px;
+    padding: 5px 9px;
+    font-family: Consolas, "Cascadia Mono", monospace;
+    font-size: 11px;
+}
+QPushButton {
+    color: #dbe5eb;
+    background: #26323a;
+    border: 1px solid #3a4a55;
+    border-radius: 4px;
+    padding: 6px 10px;
+    min-height: 18px;
+}
+QPushButton:hover {
+    background: #31414c;
+    border-color: #55717f;
+}
+QPushButton:pressed {
+    background: #1d2a31;
+}
+QPushButton:checked {
+    color: #e5fff5;
+    background: #146b5a;
+    border-color: #36a68b;
+}
+QPushButton:disabled {
+    color: #60717c;
+    background: #20282e;
+    border-color: #2b353d;
+}
+QPushButton#primaryButton {
+    color: #f4fffb;
+    background: #16735f;
+    border-color: #34a789;
+    font-weight: 600;
+}
+QPushButton#primaryButton:hover {
+    background: #1b896f;
+    border-color: #5fd0ac;
+}
+QPushButton[ready="true"] {
+    color: #ddfff3;
+    background: #1c5145;
+    border-color: #3f8e7c;
+}
+QComboBox {
+    color: #e0e9ee;
+    background: #141a1f;
+    border: 1px solid #3a4a55;
+    border-radius: 4px;
+    padding: 5px 28px 5px 8px;
+    min-height: 18px;
+}
+QComboBox:hover, QComboBox:focus {
+    border-color: #5d7b87;
+}
+QComboBox::drop-down {
+    border: none;
+    width: 22px;
+}
+QComboBox QAbstractItemView {
+    color: #e0e9ee;
+    background: #202a31;
+    border: 1px solid #3a4a55;
+    selection-background-color: #16735f;
+}
+QListWidget {
+    color: #cfdbe1;
+    background: #11171b;
+    border: 1px solid #303d46;
+    border-radius: 5px;
+    outline: none;
+    padding: 3px;
+}
+QListWidget::item {
+    border-radius: 3px;
+    padding: 5px 6px;
+}
+QListWidget::item:hover {
+    background: #26353d;
+}
+QListWidget::item:selected {
+    color: #f1fff9;
+    background: #176c5a;
+}
+QScrollBar:vertical {
+    background: #11171b;
+    width: 10px;
+    margin: 4px 2px;
+}
+QScrollBar::handle:vertical {
+    background: #40515c;
+    min-height: 26px;
+    border-radius: 4px;
+}
+QScrollBar::handle:vertical:hover { background: #58707d; }
+QScrollBar::add-line:vertical, QScrollBar::sub-line:vertical { height: 0; }
+QSplitter::handle {
+    background: #2a353d;
+}
+QSplitter::handle:hover {
+    background: #3f8e7c;
+}
+QToolTip {
+    color: #e6f0f3;
+    background: #202b32;
+    border: 1px solid #4a606a;
+    padding: 5px;
+}
+QFrame#divider {
+    color: #34434d;
+    background: #34434d;
+    max-width: 1px;
+}
+"""
 
 
 class ElidedLabel(QLabel):
@@ -40,6 +209,32 @@ class ElidedLabel(QLabel):
             return
         elided = self.fontMetrics().elidedText(self._full_text, Qt.ElideRight, self.width())
         super().setText(elided)
+
+
+def make_section_label(text):
+    label = QLabel(text)
+    label.setObjectName('appSection')
+    return label
+
+
+def make_field_label(text):
+    label = QLabel(text)
+    label.setObjectName('fieldLabel')
+    return label
+
+
+def make_list_title(text):
+    label = QLabel(text)
+    label.setObjectName('listTitle')
+    return label
+
+
+def make_divider():
+    divider = QFrame()
+    divider.setObjectName('divider')
+    divider.setFrameShape(QFrame.VLine)
+    divider.setSizePolicy(QSizePolicy.Fixed, QSizePolicy.Expanding)
+    return divider
 
 
 def compact_relative_path(relative_path, max_parent_length=24):
@@ -110,14 +305,17 @@ class CompareWidget(QWidget):
         self.show_diff = False
 
         # UI 初始化
-        self.label = QLabel("请在左侧选择文件")
+        self.label = QLabel("选择文件夹或单对图片以开始对比")
         self.label.setAlignment(Qt.AlignCenter)
-        self.label.setStyleSheet("background-color: #202020; color: #888;")
+        self.label.setStyleSheet(
+            "background-color: #0a0e11; color: #60717c; "
+            "border: 1px solid #27343c; border-radius: 5px;"
+        )
         self.label.setMouseTracking(True)
         self.label.installEventFilter(self)
 
         self.info_label = QLabel("坐标: -, 像素值: -")
-        self.info_label.setStyleSheet("font-weight: bold; color: #00FF00;")
+        self.info_label.setObjectName('pixelInfo')
 
         # 布局
         layout = QVBoxLayout()
@@ -343,6 +541,7 @@ class BatchCompareWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("CompareDiff")
         self.resize(1200, 800)
+        self.setMinimumSize(1024, 680)
 
         self.dirA = ""
         self.dirB = ""
@@ -356,82 +555,120 @@ class BatchCompareWindow(QMainWindow):
 
         # --- UI 组件 ---
         main_widget = QWidget()
+        main_widget.setObjectName('mainSurface')
         self.setCentralWidget(main_widget)
         main_layout = QVBoxLayout(main_widget)
+        main_layout.setContentsMargins(12, 12, 12, 12)
+        main_layout.setSpacing(10)
 
         # 1. 顶部控制栏
-        top_bar = QHBoxLayout()
-        top_bar.addWidget(QLabel("对比模式："))
+        toolbar = QWidget()
+        toolbar.setObjectName('toolbar')
+        toolbar.setFixedHeight(72)
+        top_bar = QHBoxLayout(toolbar)
+        top_bar.setContentsMargins(12, 8, 12, 8)
+        top_bar.setSpacing(8)
+
+        title_group = QVBoxLayout()
+        title_group.setSpacing(0)
+        app_name = QLabel("CompareDiff")
+        app_name.setObjectName('appName')
+        title_group.addWidget(app_name)
+        title_group.addWidget(make_section_label("RESEARCH IMAGE REVIEW"))
+        top_bar.addLayout(title_group)
+        top_bar.addWidget(make_divider())
+
+        mode_group = QVBoxLayout()
+        mode_group.setSpacing(2)
+        mode_group.addWidget(make_section_label("对比模式"))
         self.mode_selector = QComboBox()
         self.mode_selector.addItem("文件夹对比", 'folder')
         self.mode_selector.addItem("单对图片", 'single')
         self.mode_selector.currentIndexChanged.connect(self.switch_compare_mode)
-        top_bar.addWidget(self.mode_selector)
+        mode_group.addWidget(self.mode_selector)
+        top_bar.addLayout(mode_group)
+        top_bar.addWidget(make_divider())
 
         self.folder_controls = QWidget()
         folder_layout = QHBoxLayout(self.folder_controls)
         folder_layout.setContentsMargins(0, 0, 0, 0)
-        self.btn_sel_dir_a = QPushButton("选择目录 Result (A)")
+        folder_layout.setSpacing(6)
+        folder_layout.addWidget(make_section_label("数据源"))
+        self.btn_sel_dir_a = QPushButton("选择 Result")
         self.btn_sel_dir_a.clicked.connect(lambda: self.select_dir('A'))
         self.lbl_dir_A = QLabel("未选择")
-        self.lbl_dir_A.setStyleSheet("color: gray;")
-        self.lbl_dir_A.setMinimumWidth(100)
+        self.lbl_dir_A.setObjectName('pathValue')
+        self.lbl_dir_A.setMinimumWidth(92)
+        self.lbl_dir_A.setMaximumWidth(120)
 
-        self.btn_sel_dir_b = QPushButton("选择目录 GT (B)")
+        self.btn_sel_dir_b = QPushButton("选择 GT")
         self.btn_sel_dir_b.clicked.connect(lambda: self.select_dir('B'))
         self.lbl_dir_B = QLabel("未选择")
-        self.lbl_dir_B.setStyleSheet("color: gray;")
-        self.lbl_dir_B.setMinimumWidth(100)
+        self.lbl_dir_B.setObjectName('pathValue')
+        self.lbl_dir_B.setMinimumWidth(92)
+        self.lbl_dir_B.setMaximumWidth(120)
 
         self.lbl_selected_file_a = ElidedLabel("左图：未选择")
         self.lbl_selected_file_b = ElidedLabel("右图：未选择")
-        self.lbl_selected_file_a.setMaximumWidth(210)
-        self.lbl_selected_file_b.setMaximumWidth(210)
+        self.lbl_selected_file_a.setObjectName('selectedFile')
+        self.lbl_selected_file_b.setObjectName('selectedFile')
+        self.lbl_selected_file_a.setMaximumWidth(170)
+        self.lbl_selected_file_b.setMaximumWidth(170)
 
         folder_layout.addWidget(self.btn_sel_dir_a)
         folder_layout.addWidget(self.lbl_dir_A)
-        folder_layout.addSpacing(12)
         folder_layout.addWidget(self.btn_sel_dir_b)
         folder_layout.addWidget(self.lbl_dir_B)
-        folder_layout.addSpacing(16)
+        folder_layout.addWidget(make_divider())
         folder_layout.addWidget(self.lbl_selected_file_a)
-        folder_layout.addSpacing(8)
         folder_layout.addWidget(self.lbl_selected_file_b)
 
         self.single_controls = QWidget()
         single_layout = QHBoxLayout(self.single_controls)
         single_layout.setContentsMargins(0, 0, 0, 0)
-        self.btn_sel_file_a = QPushButton("选择左图 Result (A)")
+        single_layout.setSpacing(6)
+        single_layout.addWidget(make_section_label("数据源"))
+        self.btn_sel_file_a = QPushButton("选择左图")
         self.btn_sel_file_a.clicked.connect(lambda: self.select_single_image('A'))
         self.lbl_file_a = QLabel("未选择")
-        self.lbl_file_a.setStyleSheet("color: gray;")
-        self.lbl_file_a.setMinimumWidth(100)
+        self.lbl_file_a.setObjectName('pathValue')
+        self.lbl_file_a.setMinimumWidth(120)
+        self.lbl_file_a.setMaximumWidth(180)
 
-        self.btn_sel_file_b = QPushButton("选择右图 GT (B)")
+        self.btn_sel_file_b = QPushButton("选择右图")
         self.btn_sel_file_b.clicked.connect(lambda: self.select_single_image('B'))
         self.lbl_file_b = QLabel("未选择")
-        self.lbl_file_b.setStyleSheet("color: gray;")
-        self.lbl_file_b.setMinimumWidth(100)
+        self.lbl_file_b.setObjectName('pathValue')
+        self.lbl_file_b.setMinimumWidth(120)
+        self.lbl_file_b.setMaximumWidth(180)
 
         single_layout.addWidget(self.btn_sel_file_a)
         single_layout.addWidget(self.lbl_file_a)
-        single_layout.addSpacing(12)
         single_layout.addWidget(self.btn_sel_file_b)
         single_layout.addWidget(self.lbl_file_b)
 
-        self.btn_diff = QPushButton("切换 Diff 模式")
-        self.btn_diff.setCheckable(True)
-        self.btn_diff.clicked.connect(self.toggle_diff_mode)
-
-        # 增加一个显式的“适配窗口”按钮，万一用户缩放跑偏了可以点
-        self.btn_fit = QPushButton("适配窗口 (Fit)")
-        self.btn_fit.clicked.connect(self.trigger_fit)
-
         top_bar.addWidget(self.folder_controls, 1)
         top_bar.addWidget(self.single_controls, 1)
-        top_bar.addStretch()
-        top_bar.addWidget(self.btn_fit)
-        top_bar.addWidget(self.btn_diff)
+        top_bar.addWidget(make_divider())
+
+        view_group = QVBoxLayout()
+        view_group.setSpacing(2)
+        view_group.addWidget(make_section_label("视图"))
+        view_controls = QHBoxLayout()
+        view_controls.setSpacing(6)
+        self.btn_fit = QPushButton("适配")
+        self.btn_fit.setToolTip("适配窗口")
+        self.btn_fit.setIcon(self.style().standardIcon(QStyle.SP_BrowserReload))
+        self.btn_fit.clicked.connect(self.trigger_fit)
+
+        self.btn_diff = QPushButton("差分")
+        self.btn_diff.setToolTip("切换 Diff 模式")
+        self.btn_diff.setCheckable(True)
+        self.btn_diff.clicked.connect(self.toggle_diff_mode)
+        view_controls.addWidget(self.btn_fit)
+        view_controls.addWidget(self.btn_diff)
+        view_group.addLayout(view_controls)
+        top_bar.addLayout(view_group)
 
         # 2. 左侧文件浏览区与图像视图
         splitter = QSplitter(Qt.Horizontal)
@@ -451,16 +688,19 @@ class BatchCompareWindow(QMainWindow):
         splitter.setStretchFactor(1, 1)
         splitter.setSizes([480, 720])
 
-        main_layout.addLayout(top_bar)
+        main_layout.addWidget(toolbar)
         main_layout.addWidget(splitter)
         self.switch_compare_mode()
 
     def create_single_browser(self):
         browser = QWidget()
         layout = QVBoxLayout(browser)
-        status = QLabel("通过顶部按钮分别选择左图和右图。")
+        layout.setContentsMargins(12, 12, 12, 12)
+        layout.setSpacing(8)
+        layout.addWidget(make_list_title("单对图片"))
+        status = QLabel("从顶部选择左图和右图后，将自动载入对比视图。")
         status.setWordWrap(True)
-        status.setStyleSheet("color: #666;")
+        status.setObjectName('summary')
         layout.addWidget(status)
         layout.addStretch()
         return browser
@@ -468,23 +708,32 @@ class BatchCompareWindow(QMainWindow):
     def create_folder_browser(self):
         browser = QWidget()
         layout = QVBoxLayout(browser)
-        layout.setContentsMargins(6, 6, 6, 6)
+        layout.setContentsMargins(8, 8, 8, 8)
         layout.setSpacing(6)
 
+        header = QHBoxLayout()
+        header.addWidget(make_list_title("图像对"))
+        header.addStretch()
         self.folder_summary = QLabel("请选择两个目录以开始自动匹配。")
-        self.folder_summary.setStyleSheet("color: #555;")
+        self.folder_summary.setObjectName('summary')
         self.folder_summary.setSizePolicy(QSizePolicy.Preferred, QSizePolicy.Fixed)
-        layout.addWidget(self.folder_summary)
+        header.addWidget(self.folder_summary)
+        layout.addLayout(header)
 
+        self.mode_button_group = QButtonGroup(browser)
         view_controls = QHBoxLayout()
+        view_controls.setSpacing(6)
         self.btn_show_auto = QPushButton("自动匹配")
         self.btn_show_auto.setCheckable(True)
         self.btn_show_auto.clicked.connect(lambda: self.show_folder_view(0))
         self.btn_show_manual = QPushButton("手动配对")
         self.btn_show_manual.setCheckable(True)
         self.btn_show_manual.clicked.connect(lambda: self.show_folder_view(1))
+        self.mode_button_group.addButton(self.btn_show_auto)
+        self.mode_button_group.addButton(self.btn_show_manual)
         view_controls.addWidget(self.btn_show_auto)
         view_controls.addWidget(self.btn_show_manual)
+        view_controls.addStretch()
         layout.addLayout(view_controls)
 
         self.folder_views = QStackedWidget()
@@ -504,6 +753,8 @@ class BatchCompareWindow(QMainWindow):
         layout.setSpacing(6)
 
         self.btn_compare_selected = QPushButton("对比所选图片")
+        self.btn_compare_selected.setObjectName('primaryButton')
+        self.btn_compare_selected.setToolTip("载入当前选择的左图与右图")
         self.btn_compare_selected.setEnabled(False)
         self.btn_compare_selected.clicked.connect(self.compare_manual_selection)
         layout.addWidget(self.btn_compare_selected)
@@ -524,7 +775,7 @@ class BatchCompareWindow(QMainWindow):
         layout = QVBoxLayout(panel)
         layout.setContentsMargins(0, 0, 0, 0)
         layout.setSpacing(4)
-        layout.addWidget(QLabel(title))
+        layout.addWidget(make_list_title(title))
         image_list = QListWidget()
         image_list.setTextElideMode(Qt.ElideRight)
         if side == 'A':
@@ -551,7 +802,6 @@ class BatchCompareWindow(QMainWindow):
     def set_path_label(label, path):
         label.setText(os.path.basename(path) or path)
         label.setToolTip(path)
-        label.setStyleSheet("color: #222;")
 
     @staticmethod
     def set_selected_file_label(label, title, path):
@@ -567,11 +817,15 @@ class BatchCompareWindow(QMainWindow):
         if type_ == 'A':
             self.dirA = d
             self.set_path_label(self.lbl_dir_A, d)
-            self.btn_sel_dir_a.setStyleSheet("background-color: #d4f0d4;")
+            self.btn_sel_dir_a.setProperty('ready', True)
+            self.btn_sel_dir_a.style().unpolish(self.btn_sel_dir_a)
+            self.btn_sel_dir_a.style().polish(self.btn_sel_dir_a)
         else:
             self.dirB = d
             self.set_path_label(self.lbl_dir_B, d)
-            self.btn_sel_dir_b.setStyleSheet("background-color: #d4f0d4;")
+            self.btn_sel_dir_b.setProperty('ready', True)
+            self.btn_sel_dir_b.style().unpolish(self.btn_sel_dir_b)
+            self.btn_sel_dir_b.style().polish(self.btn_sel_dir_b)
 
         if self.dirA and self.dirB:
             self.scan_files()
@@ -704,6 +958,7 @@ class BatchCompareWindow(QMainWindow):
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
+    app.setStyleSheet(APP_STYLE)
     win = BatchCompareWindow()
     win.show()
     sys.exit(app.exec_())

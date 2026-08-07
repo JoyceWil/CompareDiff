@@ -137,4 +137,6 @@ pyinstaller ImageCompareTool.spec
 - 已完成：在 `C:\Users\guheg\anaconda3\envs\compare_diff` 环境中执行 `python -X utf8 -m py_compile compare_tool.py` 静态编译检查。
 - 已完成：在同一环境以 Qt 离屏模式完成 GUI 冒烟测试，覆盖文件夹自动匹配、手动任选配对、单对图片对比、自动匹配为零时切换手动配对，以及尺寸不一致的安全拦截。
 - 已完成：在同一环境以 Qt 离屏模式验证紧凑手动配对布局、顶部所选文件名、长层级路径省略及完整路径悬停提示。
-- 未完成：尚未在真实桌面窗口中进行人工交互验收，也未重新打包 `ImageCompareTool.exe`。
+- 已完成：主题化界面的 Qt 冒烟测试，覆盖工具栏高度、自动/手动/单对工作流、差分开关、长路径提示和尺寸不一致拦截；另已截取原生窗口验证深色主题下的文字与控件可读性。
+- 已完成：使用 `PyInstaller 6.17.0` 在 `compare_diff` 环境重新打包单文件 GUI 程序，并确认 `dist/ImageCompareTool.exe` 能启动并保持运行。
+- 未完成：尚未进行面向真实实验目录的人工交互验收。
