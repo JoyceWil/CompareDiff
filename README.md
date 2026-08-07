@@ -6,7 +6,7 @@
 
 通用图像对比软件通常更适合逐张文件的人工选择，缺少对科研实验目录结构的理解。当一个实验同时产出大量结果图，并且需要与对应的 Ground Truth（GT）或基线结果逐一核对时，手工定位配对文件会打断分析过程。CompareDiff 同时支持自由选择单对图像与面向实验目录的批量浏览：自动发现同相对路径的图像对，并在自动匹配不满足需求时允许研究者手动指定任意两张图像。
 
-<video src="assets/Operation%20Demo.mp4" controls width="100%"></video>
+![Operation Demo](assets/Operation%20Demo.gif)
 
 
 ## 已实现功能
